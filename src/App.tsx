@@ -1,126 +1,71 @@
+import { useMemo, useState } from "react";
 import "./styles.css";
-
-const project = {
-  "sourceNo": 2,
-  "id": "hxyfront-62009",
-  "port": 62009,
-  "title": "地毯修复纹样档案",
-  "domain": "手工地毯修复",
-  "prompt": "做一个给手工地毯修复工作室使用的纹样与修复档案前端项目，可以记录地毯产地、年代、结密度、材质、染色类型、破损区域、补线颜色和修复工序。页面需要有纹样局部标记图、修复前后记录、材料色卡、工序进度和按产地筛选的档案列表。",
-  "palette": [
-    "#7c2d12",
-    "#b45309",
-    "#0f766e"
-  ],
-  "metrics": [
-    "待修复",
-    "纹样档案",
-    "色卡数量",
-    "完工率"
-  ],
-  "filters": [
-    "波斯",
-    "安纳托利亚",
-    "高加索",
-    "藏毯"
-  ],
-  "fields": [
-    "地毯产地",
-    "年代",
-    "结密度",
-    "材质",
-    "染色类型",
-    "破损区域"
-  ],
-  "records": [
-    [
-      "CAR-092",
-      "波斯",
-      "羊毛，约1960s",
-      "边缘磨损待补线"
-    ],
-    [
-      "CAR-117",
-      "安纳托利亚",
-      "植物染，结密度42",
-      "中心纹样缺口"
-    ],
-    [
-      "CAR-138",
-      "藏毯",
-      "局部褪色",
-      "需匹配靛蓝色卡"
-    ]
-  ]
-};
+import { useArchiveState } from "./state/useArchiveState";
+import { MetricsBar } from "./components/MetricsBar";
+import { ArchiveList } from "./components/ArchiveList";
+import { RugDetail } from "./components/RugDetail";
+import { ColorCardPanel } from "./components/ColorCardPanel";
+import { ChangeLog } from "./components/ChangeLog";
 
 function App() {
+  const { state, error, actions } = useArchiveState();
+
+  // 页面本地状态：筛选与选中，不写入档案
+  const [selectedOrigin, setSelectedOrigin] = useState<string | null>(null);
+  const [selectedRugId, setSelectedRugId] = useState<string | null>(null);
+
+  const origins = useMemo(
+    () => Array.from(new Set(state.rugs.map((r) => r.origin))),
+    [state.rugs]
+  );
+  const selectedRug =
+    state.rugs.find((r) => r.id === selectedRugId) ?? state.rugs[0];
+
   return (
     <main className="app">
       <section className="hero">
-        <p>{project.id} · 源提示词{project.sourceNo} · Port {project.port}</p>
-        <h1>{project.title}</h1>
-        <span>{project.prompt}</span>
+        <p>hxyfront-62009 · 手工地毯修复工作室</p>
+        <h1>地毯修复纹样档案 · 染料批次台账</h1>
+        <span>
+          同一色号按批次记录到货日期与余量；破损区域补线时选定具体批次。
+          批次因褪色停用后，仅用过该批的区域转「待复核」并保留原用量，
+          其它批次与档案照常施工；复核改用新批次后，色卡余量、区域进度与产地列表同步更新，
+          每次换批都留痕，关掉页面再回来记录仍在。
+        </span>
       </section>
 
-      <section className="metrics">
-        {project.metrics.map((metric: string, index: number) => (
-          <article key={metric}>
-            <small>{metric}</small>
-            <strong>{[28, 6, 14, 91][index] ?? 10}</strong>
-          </article>
-        ))}
-      </section>
+      <MetricsBar state={state} />
+
+      {error && (
+        <div className="error-banner" role="alert">
+          <span>{error}</span>
+          <button onClick={actions.dismissError}>知道了</button>
+        </div>
+      )}
 
       <section className="workspace">
-        <aside className="panel">
-          <h2>{project.domain}分类</h2>
-          <div className="chips">
-            {project.filters.map((item: string) => (
-              <button key={item}>{item}</button>
-            ))}
-          </div>
-        </aside>
-
-        <section className="panel form-panel">
-          <div className="heading">
-            <div>
-              <p>专业字段</p>
-              <h2>新增记录</h2>
-            </div>
-            <button className="primary">保存记录</button>
-          </div>
-          <div className="field-grid">
-            {project.fields.map((field: string) => (
-              <label key={field}>
-                <span>{field}</span>
-                <input placeholder={"填写" + field} />
-              </label>
-            ))}
-          </div>
-        </section>
+        <ArchiveList
+          state={state}
+          origins={origins}
+          selectedOrigin={selectedOrigin}
+          onSelectOrigin={setSelectedOrigin}
+          selectedRugId={selectedRug?.id ?? null}
+          onSelectRug={setSelectedRugId}
+        />
+        {selectedRug && (
+          <RugDetail state={state} rug={selectedRug} actions={actions} />
+        )}
       </section>
 
-      <section className="panel">
-        <div className="heading">
-          <div>
-            <p>近期记录</p>
-            <h2>工作台摘要</h2>
-          </div>
-          <button>导出CSV</button>
-        </div>
-        <div className="records">
-          {project.records.map((record: string[], index: number) => (
-            <article key={record.join("-")}>
-              <b>{String(index + 1).padStart(2, "0")}</b>
-              <div>
-                <h3>{record[0]}</h3>
-                <p>{record.slice(1).join(" · ")}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      <ColorCardPanel state={state} actions={actions} />
+
+      <ChangeLog state={state} />
+
+      <footer className="footer">
+        <button className="ghost" onClick={actions.resetAll}>
+          恢复初始档案（清空本地改动）
+        </button>
+      </footer>
     </main>
   );
 }

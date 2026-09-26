@@ -18,7 +18,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -165,12 +166,15 @@ label span {
   font-size: 13px;
 }
 
-input {
+input,
+select {
   width: 100%;
   min-height: 42px;
   border-radius: 7px;
   border: 1px solid var(--border);
   padding: 0 12px;
+  background: #ffffff;
+  color: #172033;
 }
 
 .records {
@@ -208,10 +212,355 @@ input {
   line-height: 1.6;
 }
 
+/* ---- 批次台账新增 ---- */
+
+.chips button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+}
+
+.metrics article.warn {
+  border-top-color: #b91c1c;
+}
+
+.metrics article.warn strong {
+  color: #b91c1c;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.rug-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.rug-item {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 12px 14px;
+  text-align: left;
+  border-radius: 8px;
+}
+
+.rug-item.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 25%, transparent);
+}
+
+.rug-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rug-item-head span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.rug-item-sub {
+  margin: 6px 0 8px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e8eef6;
+  overflow: hidden;
+}
+
+.bar.slim {
+  height: 5px;
+  margin-top: 4px;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--secondary));
+}
+
+.badge {
+  font-style: normal;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.badge.ok { background: #ecfdf5; color: #047857; }
+.badge.low { background: #fffbeb; color: #b45309; }
+.badge.dead { background: #fef2f2; color: #b91c1c; }
+.badge.review,
+.badge.status-待复核 { background: #fff7ed; color: #c2410c; }
+.badge.status-待补线 { background: #f1f5f9; color: #475569; }
+.badge.status-修复中 { background: #eff6ff; color: #1d4ed8; }
+.badge.status-已完工 { background: #ecfdf5; color: #047857; }
+
+.rug-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.rug-meta div {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.rug-meta dt {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.rug-meta dd {
+  margin: 4px 0 0;
+  font-weight: 600;
+}
+
+.section-title {
+  margin: 4px 0 12px;
+}
+
+.area-list {
+  display: grid;
+  gap: 14px;
+}
+
+.area-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfdff;
+  display: grid;
+  gap: 12px;
+}
+
+.area-card.reviewing {
+  border-color: #fdba74;
+  background: #fffaf5;
+}
+
+.area-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.area-head h4 {
+  margin: 0 0 4px;
+}
+
+.area-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.area-head .badge {
+  margin-left: auto;
+}
+
+.swatch {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.swatch.big { width: 34px; height: 34px; }
+.swatch.small {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+}
+
+.use-table,
+.batch-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.use-table td,
+.batch-table th,
+.batch-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.batch-table th {
+  color: #64748b;
+  font-weight: 600;
+}
+
+tr.dead td {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+tr.dead td:last-child,
+tr.dead td .badge {
+  text-decoration: none;
+}
+
+.review-box {
+  padding: 12px;
+  border: 1px dashed #fdba74;
+  border-radius: 8px;
+  background: #fff7ed;
+}
+
+.review-note {
+  margin: 0 0 10px;
+  color: #9a3412;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.inline-form.add-batch {
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  margin-bottom: 12px;
+}
+
+.color-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.color-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fbfdff;
+}
+
+.color-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.color-head h4 {
+  margin: 0 0 2px;
+}
+
+.color-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.color-head .ghost {
+  margin-left: auto;
+}
+
+.remain .low {
+  color: #b45309;
+  font-weight: 700;
+}
+
+button.danger {
+  min-height: 30px;
+  padding: 0 10px;
+  border-color: #fecaca;
+  color: #b91c1c;
+  background: #fff;
+}
+
+button.danger:hover {
+  background: #fef2f2;
+}
+
+button.ghost {
+  min-height: 32px;
+  padding: 0 12px;
+  background: transparent;
+}
+
+button.primary:disabled,
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rec-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.rec-badge.ok { background: linear-gradient(135deg, #047857, #0f766e); }
+.rec-badge.info { background: linear-gradient(135deg, #1d4ed8, #0f766e); }
+.rec-badge.dead { background: linear-gradient(135deg, #b91c1c, #7c2d12); }
+.rec-badge.review { background: linear-gradient(135deg, #c2410c, #b45309); }
+
+.rec-flow {
+  color: #475569;
+  font-weight: 600;
+}
+
+.rec-amount {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.rec-time {
+  font-size: 12px;
+  color: #94a3b8 !important;
+}
+
+.empty {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
 @media (max-width: 860px) {
   .metrics,
   .workspace,
-  .field-grid {
+  .field-grid,
+  .rug-meta,
+  .inline-form,
+  .inline-form.add-batch {
     grid-template-columns: 1fr;
   }
 

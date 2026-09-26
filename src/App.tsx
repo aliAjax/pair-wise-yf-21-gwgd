@@ -1,126 +1,81 @@
 import "./styles.css";
+import { useStudioStore } from "./useStudioStore";
+import ColorCards from "./components/ColorCards";
+import ArchiveList from "./components/ArchiveList";
+import ChangeLogPanel from "./components/ChangeLogPanel";
 
-const project = {
-  "sourceNo": 2,
-  "id": "hxyfront-62009",
-  "port": 62009,
-  "title": "地毯修复纹样档案",
-  "domain": "手工地毯修复",
-  "prompt": "做一个给手工地毯修复工作室使用的纹样与修复档案前端项目，可以记录地毯产地、年代、结密度、材质、染色类型、破损区域、补线颜色和修复工序。页面需要有纹样局部标记图、修复前后记录、材料色卡、工序进度和按产地筛选的档案列表。",
-  "palette": [
-    "#7c2d12",
-    "#b45309",
-    "#0f766e"
-  ],
-  "metrics": [
-    "待修复",
-    "纹样档案",
-    "色卡数量",
-    "完工率"
-  ],
-  "filters": [
-    "波斯",
-    "安纳托利亚",
-    "高加索",
-    "藏毯"
-  ],
-  "fields": [
-    "地毯产地",
-    "年代",
-    "结密度",
-    "材质",
-    "染色类型",
-    "破损区域"
-  ],
-  "records": [
-    [
-      "CAR-092",
-      "波斯",
-      "羊毛，约1960s",
-      "边缘磨损待补线"
-    ],
-    [
-      "CAR-117",
-      "安纳托利亚",
-      "植物染，结密度42",
-      "中心纹样缺口"
-    ],
-    [
-      "CAR-138",
-      "藏毯",
-      "局部褪色",
-      "需匹配靛蓝色卡"
-    ]
-  ]
+const STUDIO = {
+  id: "hxyfront-62009",
+  title: "地毯修复纹样档案 · 染料批次管理",
+  intro:
+    "同一色号的染料按到货批次分别留档：每个颜色维护批次、到货日期与余量；破损区补线必须选定具体批次。批次因褪色停用后，其余批次和其他档案照常施工，受影响区域自动转待复核并保留原用量；复核换批后余量、进度与产地筛选同步更新，所有换批记录持久保存。",
 };
 
 function App() {
+  const { state, actions, toast } = useStudioStore();
+
+  if (!state) {
+    return (
+      <main className="app">
+        <p className="loading">正在调取修复档案…</p>
+      </main>
+    );
+  }
+
+  const allAreas = state.archives.flatMap((a) => a.areas);
+  const pending = allAreas.filter((a) => a.status !== "已完工").length;
+  const review = allAreas.filter((a) => a.status === "待复核").length;
+  const finished = allAreas.filter((a) => a.status === "已完工").length;
+  const finishRate = allAreas.length
+    ? Math.round((finished / allAreas.length) * 100)
+    : 0;
+  const activeBatches = state.batches.filter((b) => b.status === "active").length;
+
   return (
     <main className="app">
       <section className="hero">
-        <p>{project.id} · 源提示词{project.sourceNo} · Port {project.port}</p>
-        <h1>{project.title}</h1>
-        <span>{project.prompt}</span>
+        <p>{STUDIO.id}</p>
+        <h1>{STUDIO.title}</h1>
+        <span>{STUDIO.intro}</span>
       </section>
 
       <section className="metrics">
-        {project.metrics.map((metric: string, index: number) => (
-          <article key={metric}>
-            <small>{metric}</small>
-            <strong>{[28, 6, 14, 91][index] ?? 10}</strong>
-          </article>
-        ))}
+        <article>
+          <small>待修复区域</small>
+          <strong>{pending}</strong>
+          {review > 0 && <em className="metric-flag">其中 {review} 处待复核</em>}
+        </article>
+        <article>
+          <small>纹样档案</small>
+          <strong>{state.archives.length}</strong>
+        </article>
+        <article>
+          <small>色卡 / 在用批次</small>
+          <strong>
+            {state.colors.length}
+            <em className="metric-sub"> / {activeBatches}</em>
+          </strong>
+        </article>
+        <article>
+          <small>区域完工率</small>
+          <strong>{finishRate}%</strong>
+        </article>
       </section>
 
-      <section className="workspace">
-        <aside className="panel">
-          <h2>{project.domain}分类</h2>
-          <div className="chips">
-            {project.filters.map((item: string) => (
-              <button key={item}>{item}</button>
-            ))}
-          </div>
-        </aside>
+      <ColorCards state={state} actions={actions} />
+      <ArchiveList state={state} actions={actions} />
+      <ChangeLogPanel state={state} />
 
-        <section className="panel form-panel">
-          <div className="heading">
-            <div>
-              <p>专业字段</p>
-              <h2>新增记录</h2>
-            </div>
-            <button className="primary">保存记录</button>
-          </div>
-          <div className="field-grid">
-            {project.fields.map((field: string) => (
-              <label key={field}>
-                <span>{field}</span>
-                <input placeholder={"填写" + field} />
-              </label>
-            ))}
-          </div>
-        </section>
-      </section>
+      <footer className="toolbar">
+        <button onClick={actions.resetAll}>恢复示例档案</button>
+        <span>档案保存在本机浏览器，刷新或关闭页面后再次打开仍保留全部批次与换批记录。</span>
+      </footer>
 
-      <section className="panel">
-        <div className="heading">
-          <div>
-            <p>近期记录</p>
-            <h2>工作台摘要</h2>
-          </div>
-          <button>导出CSV</button>
+      {toast && (
+        <div className={`toast toast-${toast.kind}`} role="status">
+          {toast.message}
         </div>
-        <div className="records">
-          {project.records.map((record: string[], index: number) => (
-            <article key={record.join("-")}>
-              <b>{String(index + 1).padStart(2, "0")}</b>
-              <div>
-                <h3>{record[0]}</h3>
-                <p>{record.slice(1).join(" · ")}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
+      )}
     </main>
   );
 }
